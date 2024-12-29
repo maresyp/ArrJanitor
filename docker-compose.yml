@@ -1,0 +1,21 @@
+services:
+  janitor:
+    build: .
+    container_name: janitor
+    network_mode: "none"
+    restart: always
+    depends_on:
+      qbittorrent:
+        condition: service_healthy
+    environment:
+      - QBIT_IP=192.168.1.102
+      - QBIT_PORT=8080
+      - QBIT_LOGIN=""
+      - QBIT_PASSWORD=""
+      - QBIT_CLEANUP_MIN_LEFT_SPACE_GIB=6.0
+    healthcheck:
+      test: ["CMD", "test", "$(find /app/my_script.log -mmin -3)"]
+      interval: 120s
+      retries: 1
+      start_period: 10s
+      timeout: 30s

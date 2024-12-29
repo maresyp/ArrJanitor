@@ -1,0 +1,9 @@
+[project]
+name = "arrjanitor"
+version = "0.1.0"
+description = "Small utility to clean up disc space when using arr stack"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.32.3",
+]
