@@ -1,3 +1,4 @@
+#!/app/bin python
 # Small script for clearing disc space when there is not much room left
 from __future__ import annotations
 
@@ -6,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 
 # ruff: noqa: T201
 
@@ -13,6 +15,8 @@ type SID = str
 
 _HEARTBEAT_FILE: Path = Path().cwd() / "janitor_heartbeat.txt"
 _QBIT_SID_FILE: Path = Path().cwd() / "janitor_qbit_sid.txt"
+
+load_dotenv()
 
 QBIT_IP = os.getenv("QBIT_IP")
 QBIT_PORT = os.getenv("QBIT_PORT")
@@ -57,8 +61,8 @@ def qbit_login() -> SID:
         },
         timeout=60,
     )
-    if data.status_code != requests.codes.ok:
-        msg = "Failed to login to qBittorrent"
+    if data.status_code != requests.codes.ok or "set-cookie" not in data.headers:
+        msg = f"Failed to login to qBittorrent: {data.text}\nhttp://{QBIT_IP}:{QBIT_PORT}/api/v2/auth/login\n{QBIT_LOGIN=} QBIT_PASSWORD={len(QBIT_PASSWORD) * '*'}"
         raise RuntimeError(msg)
 
     sid: SID = ""

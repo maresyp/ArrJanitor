@@ -78,6 +78,7 @@ groupadd -r app
 useradd -r -d /app -g app -N app
 EOT
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 STOPSIGNAL SIGINT
 
 # Note how the runtime dependencies differ from build-time ones.
@@ -101,27 +102,23 @@ EOT
 # and change the ownership to user app and group app in one step.
 COPY --from=build --chown=app:app /app /app
 COPY ./src /app/
+COPY docker-entrypoint.sh /
 WORKDIR /app
 
 # Create a cron file with the schedule
 RUN echo "* * * * * root /app/bin/python /app/janitor.py > /proc/1/fd/1 2>/proc/1/fd/2" | tee /etc/cron.d/janitor-cron
 RUN chmod 0644 /etc/cron.d/janitor-cron
-RUN chmod 0744 /app/janitor.py
+RUN chmod +x /app/janitor.py
 RUN mkdir -p /var/run/ && chown app:app /var/run/
 RUN touch /var/log/cron.log && chown app:app /var/log/cron.log
 
-ENV QBIT_IP=localhost
-ENV QBIT_PORT=8080
-ENV QBIT_LOGIN=""
-ENV QBIT_PASSWORD=""
-ENV QBIT_CLEANUP_MIN_LEFT_SPACE_GIB=6.0
-
-# https://stackoverflow.com/questions/27771781/how-can-i-access-docker-set-environment-variables-from-a-cron-job
-RUN printenv | grep -v "no_proxy" > /etc/environment
+ENV QBIT_IP=localhost \
+    QBIT_PORT=8080 \
+    QBIT_LOGIN= \
+    QBIT_PASSWORD= \
+    QBIT_CLEANUP_MIN_LEFT_SPACE_GIB=6.0
 
 RUN <<EOT
 python -V
 python -Im site
 EOT
-
-CMD ["cron", "-f"]

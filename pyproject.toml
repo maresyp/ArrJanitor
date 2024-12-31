@@ -5,5 +5,6 @@ description = "Small utility to clean up disc space when using arr stack"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "python-dotenv>=1.0.1",
     "requests>=2.32.3",
 ]
